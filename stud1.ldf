@@ -1,0 +1,263 @@
+//------------------------------------------------------------------------------
+// stud1.ldf
+//
+// STUD-1 Linker Definition File
+//------------------------------------------------------------------------------
+
+ARCHITECTURE(ADSP-2191)
+
+#ifndef __NO_STD_LIB
+SEARCH_DIR( $ADI_DSP/219x/lib )
+#endif
+
+// ADSP-2191 Memory Map (Internal)
+//
+// Block  Start Address  End Address  Page  Content 
+// ===================================================
+// 0      0x00 0000      0x00 3fff    0     24 Bit Program Memory RAM
+// 1      0x00 4000      0x00 7fff    0     24 Bit Program Memory RAM
+// 2      0x00 8000      0x00 bfff    0     16 Bit Data Memory RAM
+// 3      0x00 c000      0x00 ffff    0     16 Bit Data Memory RAM
+
+// Do not allow linkers -e(elimination) various symbols
+//  _main - C/C++ application main() function
+//  ___ctor_NULL_marker - static ctor list null terminator
+//KEEP(_main)
+//#ifdef __cplusplus
+//KEEP(_main,___ctor_NULL_marker)
+//#endif
+
+// Example interrupt vector table
+// $INTTAB    = 219x_int_tab.doj;
+
+// libsim provides fast, mostly host emulated IO only supported by
+// the simulator. The libio library provides IO processing mostly
+// done by the 219X target that is supported by the emulator and
+// simulator. Libio is the default used, but if __USING_LIBSIM is
+// defined libsim will be used.
+//   from the driver command line, use options,
+//          "-flags-link -MD__USING_LIBSIM=1"
+//   in the ide, add -MD__USING_LIBSIM=1 to the linker additional
+//   options
+
+#ifdef __USING_LIBSIM
+$IOLIB     = libsim.dlb;
+#else  // !__USING_LIBSIM
+$IOLIB     = libio.dlb;
+#endif //  __USING_LIBSIM
+
+$CLIBS     = libc.dlb, libdsp.dlb, libetsi.dlb;
+
+
+// EZ-Kits:
+// The linker, upon invocation, will determine if the user has a restricted
+// license or not. If the user has a restricted license, the preprocessor
+// macro __EZKIT_LICENSE_RESTRICTION_21xx__ shall be defined. 
+// This default LDF will ensure that the DSP is correctly initialised for
+// the EZKIT monitor program by using alternate CRT objects when the macro 
+// is defined.
+
+//$START     = 219x_hdr.doj;
+//$STARTEZ   = 219x_ezkit_hdr.doj;
+
+#ifdef __EZKIT_LICENSE_RESTRICTION_21xx__  
+$OBJECTS   = $COMMAND_LINE_OBJECTS;
+//$OBJECTS   = $STARTEZ, $INTTAB, $COMMAND_LINE_OBJECTS;
+#else
+$OBJECTS   = $COMMAND_LINE_OBJECTS;
+//$OBJECTS   = $START, $INTTAB, $COMMAND_LINE_OBJECTS;
+#endif
+
+// Libraries from the command line are included in COMMAND_LINE_OBJECTS.
+$LIBRARIES = $IOLIB, $CLIBS;
+
+// Compiler defaults:
+// The default program memory used by the compiler will be in
+// a section called program, and gets placed in a memory segment
+// being defined below as mem_code.
+//
+// The default DM data memory used by the compiler will be in
+// a section called data1, and gets placed in a memory segment
+// being defined below as mem_data1.
+//
+// The default PM data memory used by the compiler will be in
+// a section called data2, and gets placed in a memory segment
+// being defined below as mem_data2.
+//
+// The memory used for mem_data2 is actually DM/16 bit memory but
+// as the compiler will not require the full 24 bits 16 bit memory
+// can be used. This is good because 24 bit memory is in short
+// supply and it avoids having to change the DMPG registers for each
+// read/write as the two data sections are on the same page.
+// The dual PM/DM bus load instructions do not incur a bus conflict
+// stall as long as the memory being accessed is in different block,
+// as is the case here with the way mem_data and mem_data2 are
+// defined.
+//
+// The memory segment used for dynamic memory used by allocation
+// routines such as malloc will is called mem_heap.
+//
+// The memory segment used for the software stack pointed to by
+// STACKPOINTER(I4) and FRAMEPOINTER(I5) is called mem_stack.
+//
+// The memory segment used to store a null terminated list of
+// C++ function pointer that are static constructors to be called
+// before main, is called mem_ctor.
+
+// memory map:
+// This memory map is set up to facilite testing of the tool
+// chain -- code and data area are as large as possible. Code
+// is placed in page 0, starting with space reserved for the
+// interrupt table. All data is placed in page 1. Note that
+// the run time header must initialize the data page registers
+// to zero to match this placement of program data. All pages are
+// 64K words.
+
+MEMORY
+{
+       // The memory section where the reset vector resides
+   mem_INT_RSTI     { TYPE(PM RAM) START(0x000000) END(0x00001f) WIDTH(24) }
+
+       // The memory sections where the interrupt vector code and an
+       // interrupt table used by library functions resides. The
+       // library functions concerned include signal(), interrupt(),
+       // raise(), and clear_interrupts()
+   mem_INT_PWRDWN   { TYPE(PM RAM) START(0x000020) END(0x00003f) WIDTH(24) }
+   mem_INT_KERNEL   { TYPE(PM RAM) START(0x000040) END(0x00005f) WIDTH(24) }
+   mem_INT_STKI     { TYPE(PM RAM) START(0x000060) END(0x00007f) WIDTH(24) }
+   mem_INT_INT4     { TYPE(PM RAM) START(0x000080) END(0x00009f) WIDTH(24) }
+   mem_INT_INT5     { TYPE(PM RAM) START(0x0000a0) END(0x0000bf) WIDTH(24) }
+   mem_INT_INT6     { TYPE(PM RAM) START(0x0000c0) END(0x0000df) WIDTH(24) }
+   mem_INT_INT7     { TYPE(PM RAM) START(0x0000e0) END(0x0000ff) WIDTH(24) }
+   mem_INT_INT8     { TYPE(PM RAM) START(0x000100) END(0x00011f) WIDTH(24) }
+   mem_INT_INT9     { TYPE(PM RAM) START(0x000120) END(0x00013f) WIDTH(24) }
+   mem_INT_INT10    { TYPE(PM RAM) START(0x000140) END(0x00015f) WIDTH(24) }
+   mem_INT_INT11    { TYPE(PM RAM) START(0x000160) END(0x00017f) WIDTH(24) }
+   mem_INT_INT12    { TYPE(PM RAM) START(0x000180) END(0x00019f) WIDTH(24) }
+   mem_INT_INT13    { TYPE(PM RAM) START(0x0001a0) END(0x0001bf) WIDTH(24) }
+   mem_INT_INT14    { TYPE(PM RAM) START(0x0001c0) END(0x0001df) WIDTH(24) }
+   mem_INT_INT15    { TYPE(PM RAM) START(0x0001e0) END(0x0001ff) WIDTH(24) }
+   mem_itab         { TYPE(PM RAM) START(0x000200) END(0x000241) WIDTH(24) } 
+
+   		// The default program memory used by the compiler. 
+   mem_code         { TYPE(PM RAM) START(0x000242) END(0x006fff) WIDTH(24) } 
+        // The default PM data memory used by the compiler. 
+   mem_data2        { TYPE(PM RAM) START(0x007000) END(0x007fff) WIDTH(24) } 
+        // The default DM data memory used by the compiler. 
+   mem_data1     	{ TYPE(DM RAM) START(0x008000) END(0x00f1ff) WIDTH(16) } 
+        // Memory section used for dynamic allocation routines. 
+   mem_heap      	{ TYPE(DM RAM) START(0x00f200) END(0x00f9ff) WIDTH(16) } 
+        // The memory section used for the software stack pointed 
+        // to by STACKPOINTER(I4) and FRAMEPOINTER(I5). 
+   mem_stack     	{ TYPE(DM RAM) START(0x00fa00) END(0x00ffff) WIDTH(16) }
+   
+} // end of memory map
+
+PROCESSOR P0
+{
+    OUTPUT( $COMMAND_LINE_OUTPUT_FILE )
+
+    SECTIONS
+    {
+       IVreset_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVreset) $LIBRARIES(IVreset) ) }
+           > mem_INT_RSTI
+
+       IVpwrdwn_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVpwrdwn) $LIBRARIES(IVpwrdwn) ) }       
+           > mem_INT_PWRDWN
+
+       IVstackint_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVstackint) $LIBRARIES(IVstackint) ) }
+           > mem_INT_STKI
+
+       IVkernel_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVkernel) $LIBRARIES(IVkernel) ) }       
+           > mem_INT_KERNEL
+
+       IVint4_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint4) $LIBRARIES(IVint4) ) }
+           > mem_INT_INT4
+
+       IVint5_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint5) $LIBRARIES(IVint5) ) }
+           > mem_INT_INT5
+
+       IVint6_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint6) $LIBRARIES(IVint6) ) }
+           > mem_INT_INT6
+
+       IVint7_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint7) $LIBRARIES(IVint7) ) }
+           > mem_INT_INT7
+
+       IVint8_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint8) $LIBRARIES(IVint8) ) }
+           > mem_INT_INT8
+
+       IVint9_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint9) $LIBRARIES(IVint9) ) }
+           > mem_INT_INT9
+
+       IVint10_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint10) $LIBRARIES(IVint10) ) }
+           > mem_INT_INT10
+
+       IVint11_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint11) $LIBRARIES(IVint11) ) }
+           > mem_INT_INT11
+
+       IVint12_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint12) $LIBRARIES(IVint12) ) }
+           > mem_INT_INT12
+
+       IVint13_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint13) $LIBRARIES(IVint13) ) }
+           > mem_INT_INT13
+
+       IVint14_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint14) $LIBRARIES(IVint14) ) }
+           > mem_INT_INT14
+
+       IVint15_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint15) $LIBRARIES(IVint15) ) }
+           > mem_INT_INT15
+
+       lib_int_table_dxe { 
+           INPUT_SECTIONS( $OBJECTS(lib_int_table) $LIBRARIES(lib_int_table) ) }
+           > mem_itab
+
+       program_dxe { 
+           INPUT_SECTIONS( $OBJECTS(program) $LIBRARIES(program) ) }
+           > mem_code
+
+       .meminit {} > mem_code
+
+       data1_dxe { 
+           INPUT_SECTIONS( $OBJECTS(data1) $LIBRARIES(data1) ) }
+           > mem_data1
+
+       data2_dxe { 
+           INPUT_SECTIONS( $OBJECTS(data2) $LIBRARIES(data2) ) }
+           > mem_data2
+           
+       // provide linker variables describing the stack (grows down)
+        //   ldf_stack_limit is the lowest address in the stack
+        //   ldf_stack_base is the highest address in the stack
+       sec_stack {
+         ldf_stack_limit = .;
+         ldf_stack_base = . + MEMORY_SIZEOF(mem_stack) - 1;
+       } > mem_stack
+
+       sec_heap {
+         .heap = .;
+         .heap_size = MEMORY_SIZEOF(mem_heap);
+         .heap_end = . + MEMORY_SIZEOF(mem_heap) - 1;
+       } > mem_heap
+
+
+    } // SECTIONS
+
+} // PROCESSOR p0
+
+// end of file

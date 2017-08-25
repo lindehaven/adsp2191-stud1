@@ -1,0 +1,264 @@
+#line 1 ".\stud1.ldf"
+                                                                                
+            
+  
+                                
+                                                                                
+
+ARCHITECTURE(ADSP-2191)
+
+                    
+SEARCH_DIR( $ADI_DSP/219x/lib )
+      
+
+                                  
+  
+                                                    
+                                                      
+                                                                     
+                                                                     
+                                                                  
+                                                                  
+
+                                                       
+                                             
+                                                          
+             
+                    
+                                 
+        
+
+                                 
+                                 
+
+                                                                  
+                                                                 
+                                                                
+                                                                 
+                               
+                                               
+                                             
+                                                                 
+            
+
+                     
+                        
+                         
+$IOLIB     = libio.dlb;
+                         
+
+$CLIBS     = libc.dlb, libdsp.dlb, libetsi.dlb;
+
+
+           
+                                                                           
+                                                                         
+                                                              
+                                                                         
+                                                                           
+              
+
+                            
+                                  
+
+                                           
+                                   
+                                                        
+     
+$OBJECTS   = $COMMAND_LINE_OBJECTS;
+                                                      
+      
+
+                                                                        
+$LIBRARIES = $IOLIB, $CLIBS;
+
+                     
+                                                             
+                                                                
+                                   
+  
+                                                             
+                                                              
+                                    
+  
+                                                             
+                                                              
+                                    
+  
+                                                                 
+                                                                  
+                                                              
+                                                                    
+                                                            
+                                                                   
+                                                                    
+                                                              
+           
+  
+                                                                
+                                                   
+  
+                                                               
+                                                             
+  
+                                                             
+                                                                 
+                                   
+
+              
+                                                            
+                                                             
+                                                            
+                                                           
+                                                              
+                                                                 
+             
+
+MEMORY
+{
+                                                           
+   mem_INT_RSTI     { TYPE(PM RAM) START(0x000000) END(0x00001f) WIDTH(24) }
+
+                                                                    
+                                                                
+                                                                    
+                                         
+   mem_INT_PWRDWN   { TYPE(PM RAM) START(0x000020) END(0x00003f) WIDTH(24) }
+   mem_INT_KERNEL   { TYPE(PM RAM) START(0x000040) END(0x00005f) WIDTH(24) }
+   mem_INT_STKI     { TYPE(PM RAM) START(0x000060) END(0x00007f) WIDTH(24) }
+   mem_INT_INT4     { TYPE(PM RAM) START(0x000080) END(0x00009f) WIDTH(24) }
+   mem_INT_INT5     { TYPE(PM RAM) START(0x0000a0) END(0x0000bf) WIDTH(24) }
+   mem_INT_INT6     { TYPE(PM RAM) START(0x0000c0) END(0x0000df) WIDTH(24) }
+   mem_INT_INT7     { TYPE(PM RAM) START(0x0000e0) END(0x0000ff) WIDTH(24) }
+   mem_INT_INT8     { TYPE(PM RAM) START(0x000100) END(0x00011f) WIDTH(24) }
+   mem_INT_INT9     { TYPE(PM RAM) START(0x000120) END(0x00013f) WIDTH(24) }
+   mem_INT_INT10    { TYPE(PM RAM) START(0x000140) END(0x00015f) WIDTH(24) }
+   mem_INT_INT11    { TYPE(PM RAM) START(0x000160) END(0x00017f) WIDTH(24) }
+   mem_INT_INT12    { TYPE(PM RAM) START(0x000180) END(0x00019f) WIDTH(24) }
+   mem_INT_INT13    { TYPE(PM RAM) START(0x0001a0) END(0x0001bf) WIDTH(24) }
+   mem_INT_INT14    { TYPE(PM RAM) START(0x0001c0) END(0x0001df) WIDTH(24) }
+   mem_INT_INT15    { TYPE(PM RAM) START(0x0001e0) END(0x0001ff) WIDTH(24) }
+   mem_itab         { TYPE(PM RAM) START(0x000200) END(0x000241) WIDTH(24) } 
+
+   		                                                    
+   mem_code         { TYPE(PM RAM) START(0x000242) END(0x006fff) WIDTH(24) } 
+                                                            
+   mem_data2        { TYPE(PM RAM) START(0x007000) END(0x007fff) WIDTH(24) } 
+                                                            
+   mem_data1     	{ TYPE(DM RAM) START(0x008000) END(0x00f1ff) WIDTH(16) } 
+                                                                
+   mem_heap      	{ TYPE(DM RAM) START(0x00f200) END(0x00f9ff) WIDTH(16) } 
+                                                                  
+                                                        
+   mem_stack     	{ TYPE(DM RAM) START(0x00fa00) END(0x00ffff) WIDTH(16) }
+   
+}                     
+
+PROCESSOR P0
+{
+    OUTPUT( $COMMAND_LINE_OUTPUT_FILE )
+
+    SECTIONS
+    {
+       IVreset_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVreset) $LIBRARIES(IVreset) ) }
+           > mem_INT_RSTI
+
+       IVpwrdwn_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVpwrdwn) $LIBRARIES(IVpwrdwn) ) }       
+           > mem_INT_PWRDWN
+
+       IVstackint_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVstackint) $LIBRARIES(IVstackint) ) }
+           > mem_INT_STKI
+
+       IVkernel_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVkernel) $LIBRARIES(IVkernel) ) }       
+           > mem_INT_KERNEL
+
+       IVint4_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint4) $LIBRARIES(IVint4) ) }
+           > mem_INT_INT4
+
+       IVint5_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint5) $LIBRARIES(IVint5) ) }
+           > mem_INT_INT5
+
+       IVint6_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint6) $LIBRARIES(IVint6) ) }
+           > mem_INT_INT6
+
+       IVint7_dxe { 
+         INPUT_SECTIONS( $OBJECTS(IVint7) $LIBRARIES(IVint7) ) }
+           > mem_INT_INT7
+
+       IVint8_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint8) $LIBRARIES(IVint8) ) }
+           > mem_INT_INT8
+
+       IVint9_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint9) $LIBRARIES(IVint9) ) }
+           > mem_INT_INT9
+
+       IVint10_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint10) $LIBRARIES(IVint10) ) }
+           > mem_INT_INT10
+
+       IVint11_dxe { 
+          INPUT_SECTIONS( $OBJECTS(IVint11) $LIBRARIES(IVint11) ) }
+           > mem_INT_INT11
+
+       IVint12_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint12) $LIBRARIES(IVint12) ) }
+           > mem_INT_INT12
+
+       IVint13_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint13) $LIBRARIES(IVint13) ) }
+           > mem_INT_INT13
+
+       IVint14_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint14) $LIBRARIES(IVint14) ) }
+           > mem_INT_INT14
+
+       IVint15_dxe { 
+           INPUT_SECTIONS( $OBJECTS(IVint15) $LIBRARIES(IVint15) ) }
+           > mem_INT_INT15
+
+       lib_int_table_dxe { 
+           INPUT_SECTIONS( $OBJECTS(lib_int_table) $LIBRARIES(lib_int_table) ) }
+           > mem_itab
+
+       program_dxe { 
+           INPUT_SECTIONS( $OBJECTS(program) $LIBRARIES(program) ) }
+           > mem_code
+
+       .meminit {} > mem_code
+
+       data1_dxe { 
+           INPUT_SECTIONS( $OBJECTS(data1) $LIBRARIES(data1) ) }
+           > mem_data1
+
+       data2_dxe { 
+           INPUT_SECTIONS( $OBJECTS(data2) $LIBRARIES(data2) ) }
+           > mem_data2
+           
+                                                                    
+                                                               
+                                                               
+       sec_stack {
+         ldf_stack_limit = .;
+         ldf_stack_base = . + MEMORY_SIZEOF(mem_stack) - 1;
+       } > mem_stack
+
+       sec_heap {
+         .heap = .;
+         .heap_size = MEMORY_SIZEOF(mem_heap);
+         .heap_end = . + MEMORY_SIZEOF(mem_heap) - 1;
+       } > mem_heap
+
+
+    }            
+
+}                
+
+              
